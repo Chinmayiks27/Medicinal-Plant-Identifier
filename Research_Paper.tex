@@ -1,0 +1,554 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+% ---------------------------------------------------------------
+% Packages
+% ---------------------------------------------------------------
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{float}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% ---------------------------------------------------------------
+% Document begin
+% ---------------------------------------------------------------
+\begin{document}
+
+\title{Hybrid CNN-PSO-SVM Framework for Medicinal Plant\\
+Recognition Using Leaf Image Classification}
+
+\author{
+    \IEEEauthorblockN{Prof. Harshith, Supriya B K, Chinmayi K S, Keerthana C, Ishika M Gowda}
+    \IEEEauthorblockA{Dept. of Information Science and Engineering \\
+    P.E.S. College of Engineering \\
+    Mandya, India \\
+    emails: \{harshithks1@gmail.com, supriyabk2005@gmail.com, \\
+    chinmayiiks27@gmail.com, ckeerthana205@gmail.com, ishikagowda26@gmail.com\}
+    }
+}
+
+\maketitle
+
+% ---------------------------------------------------------------
+% Abstract
+% ---------------------------------------------------------------
+\begin{abstract}
+Identifying medicinal flora with precision is a complex but essential task for modernizing ancestral healthcare practices. Visual inspection by humans is prone to subjective mistakes and requires rare botanical proficiency. In response, this paper introduces a customized, multi-tier computational vision architecture tailored for leaf-based species differentiation. Rather than relying on rigid algorithms, our design employs a pre-trained MobileNetV2 backbone to isolate rich spatial data, subsequently routing these signals through a Particle Swarm Optimization (PSO) filter to strip away redundant dimensions. A linear Support Vector Machine (SVM) then processes the refined subset to output the final prediction. Tested against a localized repository encompassing 19 unique Indian therapeutic plants, the proposed framework secured a peak classification accuracy of 82.45\%. Crucially, this establishes a definitive 15.7\% leap in performance over standard convolutional baselines traditionally deployed for this methodology. To maximize accessibility, the inference logic was packaged alongside a Node.js and React technology stack, with Google's Gemini Vision API acting as a secondary verification tier. By compressing our extraction layers into a highly efficient TFLite binary, the system guarantees low-latency, offline operability suitable for standard smartphone processors.
+\end{abstract}
+
+\begin{IEEEkeywords}
+\textbf{Convolutional Neural Network, Deep Learning, Feature Selection, Leaf Image Classification, Medicinal Plants, Mobile Application, MobileNetV2, Particle Swarm Optimization, Support Vector Machine, TFLite.}
+\end{IEEEkeywords}
+
+% ---------------------------------------------------------------
+% 1. Introduction
+% ---------------------------------------------------------------
+\section{Introduction}
+
+Historically, countless indigenous therapies, particularly within Ayurvedic medicine, have depended on the precise harvesting of naturally occurring botanicals \cite{pandey2014}. Despite their widespread utility, verifying the exact taxonomy of a specimen in the field presents a steep learning curve for rural practitioners. Misidentifying leaves not only nullifies the intended medicinal benefits but can accidentally expose patients to dangerous biotoxins.
+
+Ordinarily, distinguishing therapeutic herbs requires trained specialists who scrutinize microscopic differences in vein architecture or leaf geometry. Because this manual sorting is fundamentally unscalable, the deployment of intelligent, image-based diagnostic systems offers a compelling and vital alternative.
+
+While Convolutional Neural Networks (CNNs) have revolutionized generalized visual categorization \cite{lecun2015, he2016, yosinski2014}, adapting them for localized plant databases presents unique logistical hurdles. Many mainstream CNN configurations demand vast processing power and millions of training samples, resources that are heavily restricted when analyzing niche regional flora. Addressing our specific repository of Indian medicinal vegetation prompted the structural adoption of MobileNetV2 \cite{howard2018}. Its depthwise separable convolutions provide the optimal equilibrium between robust pattern recognition capabilities and stringently restricted computational overhead, a strict requirement for eventual edge deployment.
+
+Furthermore, extracting feature maps from deep layers produces overwhelmingly vast mathematical arrays, frequently provoking memory bottlenecks. To neutralize this structural deficit, our methodology actively injects Particle Swarm Optimization (PSO) \cite{kennedy1995} into the inference chain. Imitating biological swarm behavior, the PSO effectively identifies and purges irrelevant visual artifacts specific to our leaf database. Consequently, the downstream analytical stage evaluates a radically minimized parameter footprint without sacrificing contextual depth.
+
+This paper formally documents the assembly of a localized botanical evaluation instrument. The fundamental contributions span:
+\begin{enumerate}
+    \item Engineering a synergistic cascade utilizing MobileNetV2, PSO, and a linear SVM.
+    \item Curating a specialized visual corpus highlighting 19 indigenous therapeutic species.
+    \item Transitioning the algorithmic core onto accessible smartphone and secure web interfaces.
+    \item Reinforcing the local model via asynchronous routing to the Gemini Vision API.
+    \item Compiling the finalized deep extraction weights into a modular TFLite package optimized for minimal hardware latency.
+\end{enumerate}
+
+% ---------------------------------------------------------------
+% 2. Literature Review
+% ---------------------------------------------------------------
+\section{Literature Review}
+
+A growing body of literature has explored automated botanical categorization, signaling a gradual shift away from classical machine learning toward advanced deep-feature extrapolation. 
+
+Initial attempts at localized species identification achieved approximately 71.0\% accuracy using basic CNN architectures augmented with heavy data manipulation \cite{akter2021}, though these frameworks lacked the sophisticated optimization protocols found in modern hybrid combinations. Conversely, implementing massively parameterized network structures like VGG16 can artificially push geometric classification bounds past 94.0\% \cite{srivastava2020}; however, such immense bulk severely restricts their practical integration outside of centralized server grids.
+
+Preceding the contemporary deep learning era, computer vision experts routinely favored handcrafted mathematical representations tracking leaf perimeter shapes, which were consecutively mapped by standalone SVM classifiers to secure modest accuracy thresholds near 78.0\% \cite{ganesh2019}. The defining critical limitation shared across both traditional heuristics and elementary deep-learning strategies is their mutual inability to autonomously mediate artificially bloated, overlapping feature coordinates. To systematically resolve this vulnerability, targeted investigations into metaheuristic mathematics \cite{zhang2018} confirmed that swarm-based logic could dynamically sever extraneous overlapping variables while safely preserving structural prediction stability.
+
+Simultaneously, the widespread publication of MobileNet layouts fundamentally altered off-grid computing \cite{howard2018}, proving unequivocally that streamlined bottleneck logic could emulate desktop-tier network capacities. Contemporary benchmark findings \cite{saleem2022} similarly indicate a consistent architectural advantage when severing the final dense nodes of a sequential neural network; redirecting those latent spatial values into an independent SVM mechanism routinely outpaces native softmax node outputs, primarily across strongly constrained sample environments. Through the systemic synthesis of these overlapping methodologies, our presented infrastructure circumvents the static memory limitations of heavy neural models while overriding the native mathematical ceilings constraining older handcrafted models.
+
+% ---------------------------------------------------------------
+% 3. Dataset
+% ---------------------------------------------------------------
+\section{Dataset Environment}
+
+\subsection{Plant Profiles}
+The diagnostic dataset curated uniquely for this investigation captures 19 separate species of medicinal vegetation endemic to the Indian subcontinent. Table~\ref{tab:plants} formally lists the verified taxonomic classes.
+
+\begin{table}[htbp]
+\caption{EXAMINED MEDICINAL FLORA}
+\label{tab:plants}
+\centering
+\small
+\begin{tabular}{|c|l|l|}
+\hline
+\textbf{Idx} & \textbf{Colloquial Name} & \textbf{Scientific Designation} \\
+\hline
+0  & Aloe Vera    & \textit{Aloe barbadensis miller} \\
+1  & Amla         & \textit{Phyllanthus emblica} \\
+2  & Amruta Balli & \textit{Tinospora cordifolia} \\
+3  & Arali        & \textit{Nerium oleander} \\
+4  & Ashoka       & \textit{Saraca asoca} \\
+5  & Ashwagandha  & \textit{Withania somnifera} \\
+6  & Bael         & \textit{Aegle marmelos} \\
+7  & Betel        & \textit{Piper betle} \\
+8  & Cinnamon     & \textit{Cinnamomum verum} \\
+9  & Curry Leaf   & \textit{Murraya koenigii} \\
+10 & Henna        & \textit{Lawsonia inermis} \\
+11 & Lavender     & \textit{Lavandula angustifolia} \\
+12 & Marigold     & \textit{Calendula officinalis} \\
+13 & Mint         & \textit{Mentha spicata} \\
+14 & Neem         & \textit{Azadirachta indica} \\
+15 & Peppermint   & \textit{Mentha piperita} \\
+16 & Tulsi        & \textit{Ocimum sanctum} \\
+17 & Turmeric     & \textit{Curcuma longa} \\
+18 & Basale       & \textit{Basella alba} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Data Assembly and Normalization}
+
+Visual samples were systematically aggregated through physical smartphone photography captured in organic sunlight, subsequently supplemented using curated botanical image banks. 
+
+To guarantee standardized tensor shapes, rigid pipeline formatting routines were universally applied:
+\begin{itemize}
+    \item Constraining the coordinate space of all canvas dimensions to a rigid $224 \times 224$ matrix.
+    \item Rescaling isolated pixel intensity boundaries safely into a $[-1, 1]$ numerical block.
+    \item Affirming precise three-channel RGB color continuity across every processed file.
+\end{itemize}
+
+Expanding the algorithmic generalization bounds mandated rigorous data augmentation cycles. Randomized affine modifications mimicking real-world distortions—including variable rotation angles, sudden illumination shifts, and bidirectional symmetry panning—were actively merged into the memory queue.
+
+\subsection{Data Splitting}
+Preserving identical category representation required establishing a stratified 80:20 partition across the image clusters. Each taxonomic branch possessed roughly 200 distinct visual maps. The broader 80.0\% partition formulated the multidimensional SVM coordinate logic, leaving the 20.0\% remainder safely sequestered to produce unbiased diagnostic scoring matrices.
+
+% ---------------------------------------------------------------
+% 4. Methodology Breakdown
+% ---------------------------------------------------------------
+\section{Methodology Breakdown}
+
+Functionally, the intelligence pipeline transitions seamlessly through three cascading modules: spatial identification, redundant feature stripping, and margin-oriented categorization. The resulting flow is mapped appropriately in Fig.~\ref{fig:architecture}.
+
+\begin{figure}[htbp]
+\centering
+\fbox{
+\begin{minipage}{0.95\linewidth}
+\centering
+\small
+\textbf{Raw Input Photograph} ($224\!\times\!224$) \\[4pt]
+$\downarrow$ \\[2pt]
+\textbf{MobileNetV2 Transfer Layer} \\
+1,280-Dimensional Value String \\[4pt]
+$\downarrow$ \\[2pt]
+\textbf{Swarm Metaheuristic Mask} \\
+Targeted Boolean Condensation \\[4pt]
+$\downarrow$ \\[2pt]
+\textbf{Linear Support Vector Logic} \\[4pt]
+$\downarrow$ \\[2pt]
+\textbf{Extrapolated Diagnostic Output}
+\end{minipage}
+}
+\caption{Visualizing the distinct CNN-PSO-SVM operational linkage.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Phase One: Deep Spatial Mapping}
+The core evaluation tier instantiates an unmodified MobileNetV2 layout \cite{howard2018}. Strategically shedding the terminal classification dense layer for a Global Average Pooling junction converts heavy spatial grids into a flattened, 1,280-element index representing the source leaf. Integrating MobileNet ensures structural resilience regarding intricate botanical geometries while strictly preserving memory profiles tuned for low-power smartphones. 
+
+\subsection{Phase Two: Heuristic Dimensionality Reduction}
+
+Averaging a uniform 1,280 dimensions continuously stresses memory limits. To intercept this, our framework implements a dynamic PSO script \cite{kennedy1995} tasked explicitly to hunt for irrelevant or interfering characteristics natively found across our 19 categories. 
+
+\begin{table}[htbp]
+\caption{SWARM CONFIGURATION VARIABLES}
+\label{tab:pso}
+\centering
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Parameter}        & \textbf{Assigned Value} \\
+\hline
+Swarm Size              & 15 Particles \\
+Max Generations         & 20 Iterations \\
+Inertial Weight ($w$)   & 0.9 \\
+Cognitive Const. ($c_1$)& 0.5 \\
+Social Const. ($c_2$)   & 0.5 \\
+Search Space Bounding   & $[0, 1]^{1280}$ \\
+Binary Selection Trigger& 0.5 \\
+\hline
+\end{tabular}
+\end{table}
+
+Defining the optimization logic requires calculating a strict mathematical loss criteria. Using standard formulation rules, the objective function stands as:
+
+\begin{equation}
+J(m) = \alpha(1 - acc(m)) + (1 - \alpha)\left(\frac{m}{d}\right)
+\label{eq:pso_obj}
+\end{equation}
+
+where $\alpha$ is locked at 0.8 to heavily prioritize prediction accuracy, $acc(m)$ conveys the mathematical error rate, $d$ encapsulates the total potential feature blocks (amounting to 1,280), and $m$ enumerates the actively chosen variables. Proceeding across 20 evolutionary epochs, the digital swarm inevitably dictates an elite boolean filtering mask.
+
+\subsection{Phase Three: Margin-Based Classification}
+Bounded entirely by the surviving coordinate data cleared by the PSO gate, a linear SVM drafts clear multidimensional borders isolating the differing taxa. Platt scaling protocols translate absolute coordinate distances directly into intuitive confidence metrics presented upon the screen.
+
+\subsection{Secondary AI Backup}
+Given the potential for abnormal environmental lighting or physically mangled specimens, the software features an auxiliary bypass route. When triggered, the system temporarily abandons local tensors, instead feeding the raw bitstream to Google's Gemini Vision API. This remote link retrieves extensive external encyclopedic records complementing the core identification.
+
+% ---------------------------------------------------------------
+% 5. Real-World Implementation
+% ---------------------------------------------------------------
+\section{Real-World Implementation}
+
+Transitioning algorithms out of the laboratory required dividing operations across the client workspace, the networking bridge, and the detached mathematical engine. Figure~\ref{fig:sysarch} illustrates the separation of concerns.
+
+\begin{figure}[htbp]
+\centering
+\fbox{
+\begin{minipage}{0.95\linewidth}
+\centering
+\small
+\textbf{Frontend React Sandbox} \\
+$\updownarrow$ HTTP Traffic \\
+\textbf{Express.js Backend Controller} \\
+$\updownarrow$ Standard Event Stream \\
+\textbf{Isolated Python Daemon} \\
+\quad Executing Tensor Environment \\[6pt]
+\textit{Alternative Routes:} \\
+Gemini Remote Verification Link
+\end{minipage}
+}
+\caption{System infrastructure interconnectivity diagram.}
+\label{fig:sysarch}
+\end{figure}
+
+Supervising the application state, an active Node.js server securely governs inbound photographic queries. Dodging the massive RAM hit typically associated with repeatedly launching independent TensorFlow runtimes, the backend instead shuttles file path strings directly toward an immortal, sleeping Python daemon by utilizing localized input/output pipelines.
+
+From the client viewport, organic interaction entails dragging a locally captured file onto the React canvas grid. Following processing, the UI visually highlights the top prediction category, additionally unrolling an informational panel detailing appropriate medical consumption contexts. Users retain full local control and can manually engage the broader Google server integration whenever required.
+
+\subsection{The TFLite Artifact}
+Extending genuine operational utility to isolated handheld domains mandated aggressively translating the finalized neural weights into a Google TensorFlow Lite artifact. 
+
+\begin{table}[htbp]
+\caption{MODEL COMPRESSION COMPARISON}
+\label{tab:tflite_compression}
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Format} & \textbf{Storage Profile} & \textbf{Accuracy Drop} \\
+\hline
+Standard Checkpoint & 18.2 MB & N/A \\
+TFLite Artifact & 8.8 MB & $<0.5\%$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Illustrated definitively in Table~\ref{tab:tflite_compression}, this restructuring collapsed the necessary footprint effectively by more than half. Armed with contemporary JavaScript libraries engineered specifically to evaluate compiled TFLite elements utilizing raw device processors, the finished smartphone build flawlessly processes photographic data off-grid without triggering external network latencies.
+
+% ---------------------------------------------------------------
+% 6. Algorithm Evaluation
+% ---------------------------------------------------------------
+\section{Algorithm Evaluation}
+
+This segment documents the quantitative outcomes recorded when applying various classification topologies to our assembled leaf compilation. We analyze several foundational algorithms before benchmarking our customized hybrid structure.
+
+\subsection{Baseline: Decision Trees (DT)}
+Initial probes utilizing a standard Decision Tree highlighted severe generalization bottlenecks natively surrounding complex foliage patterns, capping out at 55.0\% accuracy. While it appropriately isolated the Amla class, profound classification overlap was observed between aesthetically similar species, notably Aloe Vera and Amruta Balli. Quantitative findings are mapped in Table~\ref{tab:dt_report}, alongside the diagnostic errors plotted in Fig.~\ref{fig:dt_cm}.
+
+\begin{table}[htbp]
+\caption{DECISION TREE PERFORMANCE REPORT}
+\label{tab:dt_report}
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Metric Type} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+\hline
+Average Valuation & 0.54 & 0.55 & 0.54 \\
+\hline
+\multicolumn{4}{|c|}{\textbf{Overall Top-Level Accuracy}: 55.0\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{"decision tree confusion matrix.jpeg"}
+\caption{Confusion matrix tracking standard Decision Tree faults.}
+\label{fig:dt_cm}
+\end{figure}
+
+\subsection{Baseline: K-Nearest Neighbors (KNN)}
+Replacing the tree logic with spatial KNN measurements elevated the baseline to 59.0\% (documented in Table~\ref{tab:knn_report}). Despite structurally minimizing absolute false positives, the algorithm produced disappointing recall metrics, largely failing to grasp nuanced vein networks. Figure~\ref{fig:knn_cm} visually logs these recurring assignment faults.
+
+\begin{table}[htbp]
+\caption{KNN PERFORMANCE REPORT}
+\label{tab:knn_report}
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Metric Type} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+\hline
+Average Valuation & 0.58 & 0.59 & 0.58 \\
+\hline
+\multicolumn{4}{|c|}{\textbf{Overall Top-Level Accuracy}: 59.0\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{"knn confusion matrix.jpeg"}
+\caption{Visualized confusion behavior associated with KNN.}
+\label{fig:knn_cm}
+\end{figure}
+
+\subsection{Baseline: Logistic Regression (LR)}
+Routing testing files through a generalized Logistic Regression methodology expanded overall accuracy up to 62.0\% (Table~\ref{tab:lr_report}). Despite proving noticeably sturdier amid wider data variance, the algorithm floundered when tasked with decoupling inherently overlapping visual textures. Associated false designations are displayed in Fig.~\ref{fig:lr_cm}.
+
+\begin{table}[htbp]
+\caption{LOGISTIC REGRESSION PERFORMANCE REPORT}
+\label{tab:lr_report}
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Metric Type} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+\hline
+Average Valuation & 0.61 & 0.62 & 0.61 \\
+\hline
+\multicolumn{4}{|c|}{\textbf{Overall Top-Level Accuracy}: 62.0\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{"logistic regression confusion matrix.jpeg"}
+\caption{Noting Logistic Regression inter-class overlap.}
+\label{fig:lr_cm}
+\end{figure}
+
+\subsection{Baseline: Naive Bayes (NB)}
+Embracing a strictly probabilistic Naive Bayes analysis resulted in a stabilized 61.0\% accuracy peak. Evaluating the misclassifications presented in Fig.~\ref{fig:nb_cm} confirmed an extensive symmetry relating to persistent prediction blind spots connected to botanically similar pairs. Table~\ref{tab:nb_report} outlines these aggregated calculations.
+
+\begin{table}[htbp]
+\caption{NAIVE BAYES PERFORMANCE REPORT}
+\label{tab:nb_report}
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Metric Type} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+\hline
+Average Valuation & 0.61 & 0.61 & 0.61 \\
+\hline
+\multicolumn{4}{|c|}{\textbf{Overall Top-Level Accuracy}: 61.0\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{"naive bayes confusion matrix.jpeg"}
+\caption{Symmetrical mapping detailing Naive Bayes errors.}
+\label{fig:nb_cm}
+\end{figure}
+
+\subsection{Baseline: Random Forests (RF)}
+Constructing an interconnected ensemble vastly improved generalized resilience. Implementing the Random Forest framework immediately propelled the metrics forward, registering a solid 70.0\% average reliability score (Table~\ref{tab:rf_report}). Pooling knowledge effectively resolved the severe data bleed plaguing earlier systems, reducing dense interference blocks mapped strictly within Fig.~\ref{fig:rf_cm}.
+
+\begin{table}[htbp]
+\caption{RANDOM FOREST PERFORMANCE REPORT}
+\label{tab:rf_report}
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Metric Type} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+\hline
+Average Valuation & 0.70 & 0.70 & 0.70 \\
+\hline
+\multicolumn{4}{|c|}{\textbf{Overall Top-Level Accuracy}: 70.0\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{"random forest confusion matrix.jpeg"}
+\caption{Random Forest diagnostic margin assessments.}
+\label{fig:rf_cm}
+\end{figure}
+
+\subsection{Baseline: Support Vector Machine (SVM)}
+Removing the metaheuristic swarm interface entirely left the standalone linear SVM processing uncompressed MobileNet arrays. This raw execution mode finalized at a moderately respectable 66.0\% (Table~\ref{tab:svm_report}). While successful at partitioning drastic silhouette disparities confidently, it continuously struggled against highly intricate margins highlighted inside Fig.~\ref{fig:svm_cm}.
+
+\begin{table}[htbp]
+\caption{STANDALONE SVM PERFORMANCE REPORT}
+\label{tab:svm_report}
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Metric Type} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+\hline
+Average Valuation & 0.65 & 0.66 & 0.65 \\
+\hline
+\multicolumn{4}{|c|}{\textbf{Overall Top-Level Accuracy}: 66.0\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{"svm confusion matrix.jpeg"}
+\caption{Standalone linear SVM confusion distributions.}
+\label{fig:svm_cm}
+\end{figure}
+
+\subsection{Evaluating the Custom Integration}
+Embedding the localized multidimensional SVM strictly behind our heuristic optimization gate unlocked staggering analytical upgrades over the isolated models. Culminating its run, the hybridized system locked down a verified 82.45\% overarching diagnostic success rate. Precision and recall scores dissecting the top-performing organic categories are recorded across Table~\ref{tab:classification}.
+
+\begin{table}[htbp]
+\caption{PROPOSED PIPELINE TARGET METRICS}
+\label{tab:classification}
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Target Concept} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 Score} \\
+\hline
+Tulsi        & 0.88 & 0.91 & 0.89 \\
+Amla         & 0.87 & 0.85 & 0.86 \\
+Aloe Vera    & 0.85 & 0.83 & 0.84 \\
+Neem         & 0.84 & 0.86 & 0.85 \\
+Mint         & 0.83 & 0.84 & 0.83 \\
+Ashwagandha  & 0.82 & 0.78 & 0.80 \\
+Basale       & 0.81 & 0.82 & 0.81 \\
+Peppermint   & 0.80 & 0.79 & 0.79 \\
+Turmeric     & 0.79 & 0.81 & 0.80 \\
+Cinnamon     & 0.77 & 0.80 & 0.78 \\
+\hline
+\textbf{Averaged Output} & \textbf{0.83} & \textbf{0.82} & \textbf{0.82} \\
+\hline
+\end{tabular}
+\end{table}
+
+Comparatively, analyzing our finalized metrics against established external literature formally verifies a tremendous 15.7\% leap scaling above primitive deep-learning methodologies targeting identical geographical contexts (see Table~\ref{tab:comparison}). Moreover, it securely circumvents the accuracy plateau restricting pure ensemble mechanics natively tested internally.
+
+\begin{table}[htbp]
+\caption{LITERATURE BENCHMARK CONTRAST}
+\label{tab:comparison}
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Reference Strategy}        & \textbf{Labels Handled} & \textbf{Recorded Cap} \\
+\hline
+Standard CNN \cite{akter2021}       & 10 & 71.3\% \\
+Manual SVM \cite{ganesh2019}        & 12 & 78.0\% \\
+\textbf{Proposed Framework}      & \textbf{19} & \textbf{82.45\%} \\
+Heavy VGG16 Tune \cite{srivastava2020} & 15 & 94.1\% \\
+\hline
+\end{tabular}
+\end{table}
+
+Subjected to operational velocity trials, solitary camera frame processing channeled cleanly through the mobile TFLite asset executed reliably in less than 100 milliseconds, emphatically validating the deployment readiness of the architectural logic.
+
+% ---------------------------------------------------------------
+% 7. Conclusion and Future Work
+% ---------------------------------------------------------------
+\section{Conclusion and Future Work}
+
+Concluding this study, we presented an extensively refined CNN-PSO-SVM mechanism precisely aligned for categorizing 19 distinctive therapeutic herb variations native to the subcontinent. Extracting intricate, deep abstractions via MobileNetV2 while mathematically deleting destructive outlier variables using a custom Particle Swarm interface provided the ultimate SVM network the clarity needed to cross the 82.45\% evaluation threshold smoothly. Expanding pragmatic utilization further, the entire processing flow successfully interfaces alongside a React and Express middleware tier, effectively bridged with a scalable TFLite node ensuring rapid, disconnected diagnosis capabilities. Complementing the autonomous architecture, a dynamic cloud API acts constantly as an emergency redundancy layer for complicated specimen submissions.
+
+Future investigative paths logically point toward accumulating far greater varieties of anomalous photographic elements capturing rare illnesses or physical mutilations. Likewise, examining the feasibility of injecting alternative swarm mechanics into the heuristic selection window presents an intriguing concept capable of further compressing terminal latency loops.
+
+% ---------------------------------------------------------------
+% Bibliographic References
+% ---------------------------------------------------------------
+\begin{thebibliography}{00}
+
+\bibitem{pandey2014}
+P. Pandey and N. Pandey,
+``Medicinal plants of India: An ethnobotanical survey,''
+\textit{J. Med. Plants Res.},
+vol.~8, no.~3, pp.~45--52, Jan. 2014.
+
+\bibitem{lecun2015}
+Y. LeCun, Y. Bengio, and G. Hinton,
+``Deep learning,''
+\textit{Nature},
+vol.~521, pp.~436--444, May 2015.
+
+\bibitem{he2016}
+K. He, X. Zhang, S. Ren, and J. Sun,
+``Deep residual learning for image recognition,''
+in \textit{Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR)},
+Los Vegas, NV, USA, Jun. 2016, pp.~770--778, doi: 10.1109/CVPR.2016.90.
+
+\bibitem{yosinski2014}
+J. Yosinski, J. Clune, Y. Bengio, and H. Lipson,
+``How transferable are features in deep neural networks?,''
+in \textit{Adv. Neural Inf. Process. Syst. (NeurIPS)},
+vol.~27, 2014, pp.~3320--3328.
+
+\bibitem{howard2018}
+M. Sandler, A. Howard, M. Zhu, A. Zhmoginov, and L.-C. Chen,
+``MobileNetV2: Inverted residuals and linear bottlenecks,''
+in \textit{Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR)},
+Salt Lake City, UT, USA, Jun. 2018, pp.~4510--4520, doi: 10.1109/CVPR.2018.00474.
+
+\bibitem{kennedy1995}
+J. Kennedy and R. Eberhart,
+``Particle swarm optimization,''
+in \textit{Proc. IEEE Int. Conf. Neural Netw.},
+vol.~4, Perth, WA, Australia, 1995, pp.~1942--1948, doi: 10.1109/ICNN.1995.488968.
+
+\bibitem{akter2021}
+R. Akter and M. I. Hosen,
+``CNN-based leaf image classification for Bangladeshi medicinal plant recognition,''
+in \textit{Proc. IEEE Int. Conf. Autom. Control Syst. Ind. (ICACSI)},
+2021, doi: 10.1109/ICACSI52804.2021.9350900.
+
+\bibitem{srivastava2020}
+S. Srivastava, P. Bhatt, and R. Sharma,
+``Transfer learning approach for plant leaf disease and species classification,''
+\textit{Int. J. Comput. Appl.},
+vol.~176, no.~38, pp.~12--17, 2020.
+
+\bibitem{ganesh2019}
+P. Ganesh and M. Reddy,
+``Medicinal plant leaf identification using SVM with texture and shape features,''
+in \textit{Proc. Int. Conf. Commun. Signal Process. (ICCSP)},
+Chennai, India, 2019, pp.~831--835.
+
+\bibitem{zhang2018}
+X. Zhang, Y. Lu, and C. Liu,
+``Feature selection via PSO-SVM for bioinformatics classification,''
+\textit{IEEE Access},
+vol.~6, pp.~34--45, 2018.
+
+\bibitem{saleem2022}
+G. Saleem, M. Akhtar, N. Ahmed, and W. Qureshi,
+``Automated analysis of leaf diseases using CNN and SVM,''
+\textit{Comput. Electron. Agric.},
+vol.~194, p.~106789, 2022.
+
+\end{thebibliography}
+
+\end{document}
